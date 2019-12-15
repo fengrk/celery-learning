@@ -1,0 +1,97 @@
+version: '3.7'
+
+networks:
+    network-celery:
+        driver: bridge
+
+volumes:
+    data-redis:
+
+services:
+    redis-stream:
+        image: redis:5.0.7-buster
+        container_name: redis-stream
+        hostname: redis-stream
+        restart: always
+        ports:
+            - "6379:6379"
+        command: ["redis-server", "--appendonly", "yes"]
+        volumes:
+            - data-redis:/data
+        networks:
+            - network-celery
+    
+    celery-flower:
+        build:
+            context: flower
+            dockerfile: Dockerfile
+        image: frkhit/celery-flower-py36
+        container_name: celery-flower
+        hostname: celery-flower
+        restart: always
+        ports:
+            - 127.0.0.1:5555:5555
+        entrypoint: celery
+        command: ["flower", "--broker=redis://redis-stream:6379/0", "--port=5555", "--persistent=True", "--db=./flower.db"]
+        depends_on:
+            - redis-stream
+        volumes:
+            - ./flower:/app
+        networks:
+            - network-celery
+    
+    celery-worker-demo-1:
+        build:
+            context: flower
+            dockerfile: Dockerfile
+        image: frkhit/celery-flower-py36
+        container_name: celery-worker-demo-1
+        hostname: celery-worker-demo-1
+        restart: always
+        volumes:
+            - ./tasks:/app
+        environment:
+            - WORKER_NAME=celery-worker-demo-1
+        entrypoint: /bin/sh
+        command: ["-c", "python worker.py && cd / && chmod +x run.sh && ./run.sh"]
+        depends_on:
+            - redis-stream
+        networks:
+            - network-celery
+    
+    celery-worker-demo-2:
+        build:
+            context: flower
+            dockerfile: Dockerfile
+        image: frkhit/celery-flower-py36
+        container_name: celery-worker-demo-2
+        hostname: celery-worker-demo-2
+        environment:
+            - WORKER_NAME=celery-worker-demo-2
+        restart: always
+        volumes:
+            - ./tasks:/app
+        entrypoint: /bin/sh
+        command: ["-c", "python worker.py && cd / && chmod +x run.sh && ./run.sh"]
+        depends_on:
+            - redis-stream
+        networks:
+            - network-celery
+    
+    celery-producer-demo-1:
+        build:
+            context: flower
+            dockerfile: Dockerfile
+        image: frkhit/celery-flower-py36
+        container_name: celery-producer-demo-1
+        hostname: celery-producer-demo-1
+        restart: always
+        volumes:
+            - ./tasks:/app
+        entrypoint: python
+        command: ["task.py"]
+        depends_on:
+            - redis-stream
+        networks:
+            - network-celery
+
