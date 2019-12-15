@@ -49,16 +49,16 @@ services:
         hostname: celery-worker-demo-1
         restart: always
         volumes:
-            - ./demo_proj:/app
+            - ./tasks:/app
         environment:
             - WORKER_NAME=celery-worker-demo-1
-        entrypoint: celery
-        command: ["-A", "celery_proj.app", "worker", "--loglevel=info", "-n", "celery-worker-demo-1", "--max-tasks-per-child=100"]
+        entrypoint: /bin/sh
+        command: ["-c", "python worker.py && cd / && chmod +x run.sh && ./run.sh"]
         depends_on:
             - redis-stream
         networks:
             - network-celery
-
+    
     celery-worker-demo-2:
         build:
             context: flower
@@ -66,18 +66,18 @@ services:
         image: frkhit/celery-flower-py36
         container_name: celery-worker-demo-2
         hostname: celery-worker-demo-2
-        restart: always
-        volumes:
-            - ./demo_proj:/app
         environment:
             - WORKER_NAME=celery-worker-demo-2
-        entrypoint: celery
-        command: ["-A", "celery_proj.app", "worker", "--loglevel=info", "-n", "celery-worker-demo-2", "--max-tasks-per-child=100"]
+        restart: always
+        volumes:
+            - ./tasks:/app
+        entrypoint: /bin/sh
+        command: ["-c", "python worker.py && cd / && chmod +x run.sh && ./run.sh"]
         depends_on:
             - redis-stream
         networks:
             - network-celery
-
+    
     celery-producer-demo-1:
         build:
             context: flower
@@ -87,11 +87,9 @@ services:
         hostname: celery-producer-demo-1
         restart: always
         volumes:
-            - ./demo_proj:/app
-        environment:
-            - PYTHONPATH=/app
+            - ./tasks:/app
         entrypoint: python
-        command: ["producer_main.py"]
+        command: ["task.py"]
         depends_on:
             - redis-stream
         networks:
