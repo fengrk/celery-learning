@@ -1,0 +1,3 @@
+[submodule "celery-redis-priority-test"]
+	path = celery-redis-priority-test
+	url = git@github.com:Tendrid/celery-redis-priority-test.git
