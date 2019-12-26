@@ -53,7 +53,7 @@ services:
         environment:
             - WORKER_NAME=celery-worker-demo-1
         entrypoint: celery
-        command: ["-A", "celery_proj.app", "worker", "--loglevel=info", "-n", "celery-worker-demo-1", "--max-tasks-per-child=100"]
+        command: ["-A", "celery_proj.app", "worker", "--loglevel=info", "-n", "celery-worker-demo-1", "-Ofair", "--autoscale=4,0", "--max-tasks-per-child=100"]
         depends_on:
             - redis-stream
         networks:
@@ -72,7 +72,7 @@ services:
         environment:
             - WORKER_NAME=celery-worker-demo-2
         entrypoint: celery
-        command: ["-A", "celery_proj.app", "worker", "--loglevel=info", "-n", "celery-worker-demo-2", "--max-tasks-per-child=100"]
+        command: ["-A", "celery_proj.app", "worker", "--loglevel=info", "-n", "celery-worker-demo-2", "-Ofair", "--autoscale=4,0", "--max-tasks-per-child=100"]
         depends_on:
             - redis-stream
         networks:
