@@ -1,0 +1,72 @@
+version: '3.7'
+
+networks:
+    network-celery:
+        driver: bridge
+
+services:
+    redis-stream:
+        image: redis:5.0.7-buster
+        container_name: redis-stream
+        hostname: redis-stream
+        restart: always
+        ports:
+            - "6379:6379"
+        command: ["redis-server", "--appendonly", "yes"]
+        networks:
+            - network-celery
+    
+    celery-flower:
+        build:
+            context: flower
+            dockerfile: Dockerfile
+        image: frkhit/celery-flower-py36
+        container_name: celery-flower
+        hostname: celery-flower
+        restart: always
+        ports:
+            - 5555:5555
+        entrypoint: celery
+        command: ["flower", "--broker=redis://redis-stream:6379/0", "--port=5555"]
+        depends_on:
+            - redis-stream
+        networks:
+            - network-celery
+    
+    celery-worker:
+        build:
+            context: flower
+            dockerfile: Dockerfile
+        image: frkhit/celery-flower-py36
+        restart: always
+        volumes:
+            - ./demo_proj:/app
+        environment:
+            - WORKER_NAME=celery-worker
+            - PYTHONPATH=/app
+        entrypoint: celery
+        command: ["-A", "celery_proj.other_apps.redis_priority", "worker", "--loglevel=info", "-n", "celery-worker", "-Q", "a-high,b-medium,c-low", "-Ofair", "-c1", "--prefetch-multiplier=1"]
+        depends_on:
+            - redis-stream
+            - celery-flower
+        networks:
+            - network-celery
+    
+    celery-test-redis-priority:
+        build:
+            context: flower
+            dockerfile: Dockerfile
+        image: frkhit/celery-flower-py36
+        volumes:
+            - ./demo_proj:/app
+        environment:
+            - PYTHONPATH=/app
+        entrypoint: python
+        command: ["-m", "unittest", "discover" , "-s", "./test-redis-priority"]
+        depends_on:
+            - redis-stream
+            - celery-flower
+            - celery-worker
+        networks:
+            - network-celery
+
