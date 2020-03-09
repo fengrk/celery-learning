@@ -3,10 +3,11 @@
 import time
 
 from celery_proj.app import celery_app
-from libs.demo_utils import demo_add
+from libs.demo_utils import demo_add, simple_log
 
 
 @celery_app.task
+@simple_log
 def demo_sum(a: float, b: float, c: float) -> float:
     time.sleep(5)
     _result = demo_add(demo_add(a, b), c)
@@ -15,6 +16,7 @@ def demo_sum(a: float, b: float, c: float) -> float:
 
 
 @celery_app.task
+@simple_log
 def demo_func(a: float, b: float) -> float:
     time.sleep(1)
     _result = a * 2 + b * b
