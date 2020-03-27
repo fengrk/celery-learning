@@ -32,7 +32,7 @@ services:
         ports:
             - 127.0.0.1:5555:5555
         entrypoint: celery
-        command: ["flower", "--broker=redis://redis-stream:6379/0", "--port=5555", "--persistent=True", "--db=./flower.db"]
+        command: ["flower", "--broker=redis://redis-stream:6379/0", "--port=5555", "--persistent=True", "--db=/flower.db"]
         depends_on:
             - redis-stream
         volumes:
@@ -58,7 +58,7 @@ services:
             - redis-stream
         networks:
             - network-celery
-
+    
     celery-worker-demo-2:
         build:
             context: flower
@@ -77,7 +77,7 @@ services:
             - redis-stream
         networks:
             - network-celery
-
+    
     celery-producer-demo-1:
         build:
             context: flower
@@ -96,4 +96,22 @@ services:
             - redis-stream
         networks:
             - network-celery
-
+    
+    celery-scheduler-demo:
+        build:
+            context: flower
+            dockerfile: Dockerfile
+        image: frkhit/celery-flower-py36
+        container_name: celery-scheduler-demo
+        hostname: celery-scheduler-demo
+        restart: always
+        volumes:
+            - ./demo_proj:/app
+        environment:
+            - PYTHONPATH=/app
+        entrypoint: celery
+        command: ["-A", "celery_proj.scheduler_main", "worker", "--loglevel=info", "-n", "celery-scheduler-demo", "--autoscale=1,0", "-Q", "main-schedule", "-B", "-s", "/scheduler.db"]
+        depends_on:
+            - redis-stream
+        networks:
+            - network-celery

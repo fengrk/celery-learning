@@ -1,13 +1,8 @@
 from kombu import Queue
 
-# 消息
-CELERY_TIMEZONE = 'Asia/Shanghai'
-CELERY_MESSAGE_COMPRESSION = "gzip"
-CELERY_TASK_SERIALIZER = "json"
-CELERY_ACKS_LATE = True
-CELERYD_PREFETCH_MULTIPLIER = 1
+from celery_proj.basic_config import *
 
-CELERY_RESULT_BACKEND = BROKER_URL = "redis://redis-stream:6379/0"
+assert BROKER_URL is not None
 
 # 队列名称
 QUEUE_A = "Q-A"
