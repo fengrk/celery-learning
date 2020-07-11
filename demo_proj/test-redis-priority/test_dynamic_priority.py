@@ -14,6 +14,9 @@ class TestDynamicPriorityRoutes(TestCase):
             t.apply_async(priority=0)
     """
 
+    def setUp(self) -> None:
+        sleep(10)
+
     def test_complex(self):
         """
         Test a complex chain of chords which pins the start tasks

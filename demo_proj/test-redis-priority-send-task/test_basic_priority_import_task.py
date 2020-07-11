@@ -1,8 +1,5 @@
 from time import sleep
 from unittest import TestCase
-
-from celery import chord, chain
-
 from celery_proj.apps_end_by_string.task.main_task import main_task
 
 # Priorities:   0, 3, 6, 9
@@ -17,6 +14,9 @@ is because when the tasks fire, the queue is empty, so it has no other higher pr
 
 
 class TestPriority(TestCase):
+    def setUp(self) -> None:
+        print(__file__)
+        sleep(3)
 
     def test_simple(self):
         """
@@ -48,7 +48,7 @@ class TestPriority(TestCase):
                     v = r.result
                     if v[0] not in success:
                         success.append(v[0])
-            sleep(1)
+            sleep(0.1)
 
         self.assertEqual(
             success,
@@ -89,7 +89,7 @@ class TestPriority(TestCase):
                     v = r.result
                     if v[0] not in success:
                         success.append(v[0])
-            sleep(1)
+            sleep(0.1)
 
         self.assertEqual(
             success,

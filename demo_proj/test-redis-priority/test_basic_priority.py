@@ -18,6 +18,9 @@ is because when the tasks fire, the queue is empty, so it has no other higher pr
 
 class TestPriority(TestCase):
 
+    def setUp(self) -> None:
+        sleep(10)
+
     def test_hello(self):
         """
 

@@ -17,12 +17,15 @@ is because when the tasks fire, the queue is empty, so it has no other higher pr
 class TestPriority(TestCase):
 
     def setUp(self) -> None:
+        print(__file__)
+
         self.task_name = None
         for task in task_routes:
             self.task_name = task
             break
 
         self.assertIsNotNone(self.task_name)
+        sleep(3)
 
     def test_simple(self):
         """
@@ -53,7 +56,7 @@ class TestPriority(TestCase):
                     v = r.result
                     if v[0] not in success:
                         success.append(v[0])
-            sleep(1)
+            sleep(0.1)
 
         self.assertEqual(
             success,
@@ -78,7 +81,7 @@ class TestPriority(TestCase):
         results = []
         for task in tasks:
             if task["priority"] == 1:
-                results.append(app.send_task(self.task_name, args=(task["name"],), ))
+                results.append(app.send_task(self.task_name, args=(task["name"],), priority=1))  # todo ignore priority, test not pass
             else:
                 results.append(app.send_task(self.task_name, args=(task["name"],), priority=task["priority"]))
 
@@ -93,7 +96,7 @@ class TestPriority(TestCase):
                     v = r.result
                     if v[0] not in success:
                         success.append(v[0])
-            sleep(1)
+            sleep(0.1)
 
         self.assertEqual(
             success,
