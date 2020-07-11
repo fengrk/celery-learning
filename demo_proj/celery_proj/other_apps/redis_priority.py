@@ -5,6 +5,8 @@ from time import sleep
 from celery import Celery
 from kombu import Queue
 
+from libs.demo_utils import celery_task_logger
+
 app_name = "redis-priority"
 app = Celery(app_name)
 
@@ -56,16 +58,19 @@ def _wait(*args, **kwargs):
     return kwargs.get("fixture_name", "UNKNOWN")
 
 
-@app.task
+@app.task(bind=True)
+@celery_task_logger
 def wait(*args, **kwargs):
     return _wait(*args, **kwargs)
 
 
-@app.task
+@app.task(bind=True)
+@celery_task_logger
 def low_priority_wait(*args, **kwargs):
     return _wait(*args, **kwargs)
 
 
-@app.task
+@app.task(bind=True)
+@celery_task_logger
 def high_priority_wait(*args, **kwargs):
     return _wait(*args, **kwargs)

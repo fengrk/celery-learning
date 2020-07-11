@@ -22,3 +22,26 @@ def simple_log(func):
             raise
 
     return wrapper
+
+
+def celery_task_logger(func):
+    """计算时间"""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kw):
+        _time_start = time.time()
+        task_id = args[0].request.id
+        try:
+            print("[task {}]task start!".format(task_id))
+        except Exception as e:
+            print(e)
+        result = func(*args, **kw)
+        _time_cost = time.time() - _time_start
+        if _time_cost > 1:
+            try:
+                print("[task {}]task finished! Time cost {:.2f}s".format(task_id, _time_cost))
+            except Exception as e:
+                print(e)
+        return result
+
+    return wrapper
